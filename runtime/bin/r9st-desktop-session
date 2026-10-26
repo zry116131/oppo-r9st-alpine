@@ -1,0 +1,17 @@
+#!/bin/sh
+export DISPLAY=:0 XAUTHORITY=/home/alpine/.Xauthority HOME=/home/alpine
+export XDG_RUNTIME_DIR=/run/user/1000 LANG=C.UTF-8
+cd "$HOME" || exit 1
+openbox &
+wm=$!
+trap 'kill "$wm" 2>/dev/null' EXIT
+sleep 1
+if [ "$(cat /etc/r9st-session-mode 2>/dev/null)" = console ]; then
+    while kill -0 "$wm" 2>/dev/null; do
+        xterm -fullscreen -fa 'DejaVu Sans Mono' -fs 18 -bg '#101418' -fg '#e0e6ec' -b 12 -title 'Alpine Linux - OPPO R9st' -e /usr/local/bin/r9st-console-shell
+        sleep 1
+    done
+else
+    xterm -fa 'DejaVu Sans Mono' -fs 18 -geometry 42x22+35+90 -title 'Alpine Linux - OPPO R9st' &
+    wait "$wm"
+fi

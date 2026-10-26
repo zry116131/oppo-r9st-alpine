@@ -1,0 +1,27 @@
+--- a/src/egl/drivers/dri2/platform_surfaceless.c
++++ b/src/egl/drivers/dri2/platform_surfaceless.c
+@@ -396,16 +396,20 @@
+ 
+    if (!driver_loaded && disp->Options.Kgsl) {
+       dri2_dpy->fd_render_gpu = loader_open_device("/dev/kgsl-3d0");
++      dri2_dpy->fd_display_gpu = dri2_dpy->fd_render_gpu;
+       dri2_dpy->driver_name = strdup("kgsl");
+-      dri2_detect_swrast_kopper(disp);
+-      driver_loaded = true;
+-      if (driver_loaded) {
++      if (dri2_dpy->fd_render_gpu >= 0 && dri2_dpy->driver_name) {
++         dri2_detect_swrast_kopper(disp);
+          dri2_dpy->loader_extensions = image_loader_extensions;
+-      } else {
++         driver_loaded = dri2_create_screen(disp) &&
++                         dri2_setup_device(disp, EGL_FALSE);
++      }
++      if (!driver_loaded) {
+          free(dri2_dpy->driver_name);
+          dri2_dpy->driver_name = NULL;
+          close(dri2_dpy->fd_render_gpu);
+          dri2_dpy->fd_render_gpu = -1;
++         dri2_dpy->fd_display_gpu = -1;
+       }
+    }
+ 

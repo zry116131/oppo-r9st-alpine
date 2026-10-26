@@ -1,0 +1,13 @@
+/* Reference fragments only: apply to the matching R9st nodes in the full tree.
+ * Not a standalone overlay or a directly compilable board description.
+ */
+/* Panel: /soc/qcom,mdss_mdp@1a00000/qcom,mdss_dsi_oppo16017samsung_ea8064_1080p_cmd
+ * Delete property: qcom,mdss-dsi-force-clock-lane-hs
+ */
+/* Pinctrl: /soc/pinctrl@1000000/pmx_ts_int_active/ts_int_active
+ * Both mux and config must use GPIO17, not the inherited GPIO65.
+ */
+ts_int_active {
+    mux { pins = "gpio17"; function = "gpio"; };
+    config { pins = "gpio17"; drive-strength = <8>; bias-pull-up; };
+};

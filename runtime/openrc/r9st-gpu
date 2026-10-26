@@ -1,0 +1,15 @@
+#!/sbin/openrc-run
+description="R9st A506 KGSL compatibility and access"
+depend() { after r9st; before display-manager r9st-desktop; }
+start() {
+    ebegin "Configuring R9st Adreno 506 compatibility"
+    [ "$(cat /etc/r9st-root-id)" = ${R9ST_EXPECTED_ROOT_ID:?Set R9ST_EXPECTED_ROOT_ID for your device} ] || { eend 1; return 1; }
+    local p=/sys/class/kgsl/kgsl-3d0
+    grep -q Adreno506 "$p/gpu_model" || { eend 1; return 1; }
+    # Current A506 microcode/new kernel preemption handshake times out.
+    # Keep single-queue rendering until preemption is separately verified.
+    echo 0 > "$p/preemption" || { eend 1; return 1; }
+    [ "$(cat "$p/preemption")" = 0 ] || { eend 1; return 1; }
+    chgrp video /dev/kgsl-3d0 && chmod 660 /dev/kgsl-3d0
+    eend $?
+}

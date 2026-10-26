@@ -1,0 +1,13 @@
+--- a/drivers/gpu/msm/adreno_ringbuffer.c
++++ b/drivers/gpu/msm/adreno_ringbuffer.c
+@@ -369,6 +369,10 @@
+ 	if (!adreno_is_a3xx(adreno_dev)) {
+ 		unsigned int priv =
+ 			KGSL_MEMDESC_RANDOM | KGSL_MEMDESC_PRIVILEGED;
++
++		/* A506 RPTR writes are unprivileged, as in the original R9s driver. */
++		if (adreno_is_a506(adreno_dev))
++			priv &= ~KGSL_MEMDESC_PRIVILEGED;
+ 
+ 		status = kgsl_allocate_global(device, &device->scratch,
+ 				PAGE_SIZE, 0, priv, "scratch");

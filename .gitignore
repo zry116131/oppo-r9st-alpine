@@ -1,0 +1,13 @@
+*.img
+*.bin
+*.dtb
+*.tar*
+*.apk
+*.fw
+*.pem
+*.key
+.env*
+.DS_Store
+backups/
+private/
+build-output/

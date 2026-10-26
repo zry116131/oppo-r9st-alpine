@@ -1,0 +1,36 @@
+#!/bin/sh
+set -eu
+export PATH=/usr/sbin:/usr/bin:/sbin:/bin
+[ -c /dev/tty0 ]
+[ -c /dev/fb0 ]
+if [ -f /run/r9st-xorg.pid ]; then
+    oldpid=$(cat /run/r9st-xorg.pid)
+    case "$oldpid" in ''|*[!0-9]*) oldpid=0;; esac
+    case "$(readlink /proc/"$oldpid"/exe 2>/dev/null || true)" in
+        */Xorg) echo 'Xorg already running; refusing duplicate'; exit 1;;
+    esac
+fi
+id alpine >/dev/null 2>&1 || adduser -D -s /bin/ash alpine
+uid=$(id -u alpine)
+[ "$uid" = 1000 ]
+mkdir -p /var/log/r9st /run/user/1000
+chown alpine:alpine /run/user/1000
+chmod 700 /run/user/1000
+rc-service udev start || true
+udevadm trigger --action=add --subsystem-match=input
+# Do not wait on unrelated camera probes from legacy vendor drivers.
+udevadm settle --timeout=3 || true
+cookie=$(od -An -N16 -tx1 /dev/urandom | tr -d ' \n')
+touch /home/alpine/.Xauthority
+chmod 600 /home/alpine/.Xauthority
+xauth -f /home/alpine/.Xauthority add :0 . "$cookie"
+unset cookie
+chown alpine:alpine /home/alpine/.Xauthority
+nohup Xorg :0 -config /etc/X11/xorg-r9st.conf -auth /home/alpine/.Xauthority -nolisten tcp -dpi 160 vt1 >/var/log/r9st/xorg-console.log 2>&1 </dev/null &
+echo $! >/run/r9st-xorg.pid
+sleep 3
+kill -0 "$(cat /run/r9st-xorg.pid)"
+nohup /usr/local/bin/r9st-fb-refresh >/var/log/r9st/fb-refresh.log 2>&1 </dev/null &
+echo $! >/run/r9st-fb-refresh.pid
+nohup su -s /bin/sh alpine -c 'exec dbus-run-session -- /usr/local/bin/r9st-desktop-session' >/var/log/r9st/desktop.log 2>&1 </dev/null &
+echo $! >/run/r9st-desktop.pid

@@ -1,0 +1,21 @@
+--- a/drivers/video/fbdev/msm/mdss_fb.c
++++ b/drivers/video/fbdev/msm/mdss_fb.c
+@@ -1404,6 +1404,10 @@
+ 	if (rc)
+ 		return rc;
+ 
++	/* Expose the backing platform device without changing legacy runtime PM. */
++	if (sysfs_create_link(&fbi->dev->kobj, &pdev->dev.kobj, "device"))
++		pr_warn("could not link framebuffer to platform device\n");
++
+ 	mdss_fb_create_sysfs(mfd);
+ 	mdss_fb_send_panel_event(mfd, MDSS_EVENT_FB_REGISTERED, fbi);
+ 
+@@ -1530,6 +1534,7 @@
+ 			    mfd->index);
+ 
+ 	/* remove /dev/fb* */
++	sysfs_remove_link(&mfd->fbi->dev->kobj, "device");
+ 	unregister_framebuffer(mfd->fbi);
+ 
+ 	if (lcd_backlight_registered) {

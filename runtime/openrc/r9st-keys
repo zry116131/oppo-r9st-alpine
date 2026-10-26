@@ -1,0 +1,9 @@
+#!/sbin/openrc-run
+description="R9st physical power key screen control and volume event capture"
+command=/usr/local/bin/r9st-keys
+command_args="0"
+command_background=true
+pidfile=/run/r9st-keys.pid
+output_log=/var/log/r9st/keys.log
+error_log=/var/log/r9st/keys.log
+depend() { need r9st-desktop; }

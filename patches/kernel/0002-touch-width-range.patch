@@ -1,0 +1,11 @@
+--- a/drivers/input/touchscreen/synaptics_oppo/synaptics_oppo_driver_3508.c
++++ b/drivers/input/touchscreen/synaptics_oppo/synaptics_oppo_driver_3508.c
+@@ -2875,6 +2875,8 @@
+ #endif
+ 	/* For multi touch */
+ 	input_set_abs_params(ts->input_dev, ABS_MT_TOUCH_MAJOR, 0, 255, 0, 0);
++	/* Width is reported above, including the synthetic +1 repeat value. */
++	input_set_abs_params(ts->input_dev, ABS_MT_WIDTH_MAJOR, 0, 256, 0, 0);
+ 	input_set_abs_params(ts->input_dev, ABS_MT_POSITION_X, 0, ts->max_x, 0, 0);
+ 	input_set_abs_params(ts->input_dev, ABS_MT_POSITION_Y, 0, ts->max_y, 0, 0);
+ #ifdef TYPE_B_PROTOCOL

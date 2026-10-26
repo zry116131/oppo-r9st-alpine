@@ -1,0 +1,24 @@
+#!/sbin/openrc-run
+description="R9st minimal native Xorg desktop"
+depend() {
+    need r9st
+    after localmount
+}
+start() {
+    ebegin "Starting R9st desktop"
+    /usr/local/bin/r9st-desktop-start
+    eend $?
+}
+stop() {
+    ebegin "Stopping R9st desktop"
+    for name in fb-refresh xorg; do
+        file=/run/r9st-$name.pid
+        if [ -f "$file" ]; then
+            pid=$(cat "$file")
+            case "$pid" in ''|*[!0-9]*) continue;; esac
+            kill "$pid" 2>/dev/null || true
+            rm -f "$file"
+        fi
+    done
+    eend 0
+}

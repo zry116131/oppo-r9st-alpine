@@ -1,0 +1,21 @@
+#!/sbin/openrc-run
+description="R9st CPU dynamic frequency policy"
+depend() { after r9st; }
+start() {
+    ebegin "Enabling R9st schedutil CPU frequency policy"
+    [ "$(cat /etc/r9st-root-id)" = ${R9ST_EXPECTED_ROOT_ID:?Set R9ST_EXPECTED_ROOT_ID for your device} ] || { eend 1; return 1; }
+    local p=/sys/devices/system/cpu/cpufreq/policy0
+    grep -qw schedutil "$p/scaling_available_governors" || { eend 1; return 1; }
+    echo schedutil > "$p/scaling_governor"
+    [ "$(cat "$p/scaling_governor")" = schedutil ] || { eend 1; return 1; }
+    # Recovery envelope disables normal CPU idle by default.
+    echo N > /sys/module/lpm_levels/parameters/sleep_disabled || { eend 1; return 1; }
+    [ "$(cat /sys/module/lpm_levels/parameters/sleep_disabled)" = N ]
+    eend $?
+}
+stop() {
+    ebegin "Restoring R9st diagnostic CPU frequency policy"
+    echo Y > /sys/module/lpm_levels/parameters/sleep_disabled
+    echo performance > /sys/devices/system/cpu/cpufreq/policy0/scaling_governor
+    eend $?
+}

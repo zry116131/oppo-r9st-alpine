@@ -1,0 +1,8 @@
+#!/bin/sh
+clear
+printf 'Alpine Linux | OPPO R9st\n\n'
+printf 'Portrait console - 1080 x 1920\n'
+printf 'Power: screen off / on (system stays running)\n'
+printf 'USB SSH: 172.31.95.2 (key authentication)\n'
+printf 'User: alpine | No on-screen keyboard yet\n\n'
+exec /bin/ash -l

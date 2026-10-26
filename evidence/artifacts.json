@@ -1,0 +1,18 @@
+{
+  "native_alpine_ramdisk": true,
+  "sha256": "fcee5f4be5f742990d5da1537587c0ce67981f9ef1a69260e3366f89a9e9d20e",
+  "kernel_sha256": "b9290206061d20223a047d85a392f8de9d47c742ca6370e930146e037a60a22d",
+  "dtb_sha256": "0de4cb0503dc581c215f4a5f4abdef0d0db5ed2c909ebe4cb24514076f36f01c",
+  "ramdisk_sha256": "3da5b7a79b539f966c092b1b54702cbc2b8429724e82dc748c8c54e4b9f08958",
+  "body_bytes": 31182076,
+  "signature_valid": false,
+  "recovery_modified": false,
+  "kernel_image_size": 47136768,
+  "ramdisk_bytes": 12968650,
+  "as_of": "2026-10-26",
+  "distribution": "hashes only; images not included",
+  "kernel_commit": "36b11cbda205f0a76d8f548554b56d5601d0dc02",
+  "mesa_commit": "401198fbcf61f74bf7214e1be57f811fc74c8358",
+  "previous_known_good_boot_sha256": "e62bc52ba69205b3e8d8249d7d9329ddb93214cef46794c235bcacdfd89fa34e",
+  "recovery_sha256": "ec397681690927917c7eb0728c6dc7ee2ad8201e0342f8760b033455df17cbfe"
+}

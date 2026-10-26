@@ -1,0 +1,48 @@
+#!/bin/sh
+# R9st native suspend, bounded by RTC, with display and USB restoration.
+set -eu
+export PATH=/usr/sbin:/usr/bin:/sbin:/bin
+[ "$(id -u)" = 0 ] || { echo 'Run as root' >&2; exit 1; }
+[ "$(cat /etc/r9st-root-id)" = ${R9ST_EXPECTED_ROOT_ID:?Set R9ST_EXPECTED_ROOT_ID for your device} ]
+seconds=${1:-120}
+case "$seconds" in ''|*[!0-9]*) exit 2;; esac
+[ "$seconds" -ge 10 ] && [ "$seconds" -le 3600 ]
+lock=/run/r9st-suspend.lock
+mkdir "$lock" 2>/dev/null || { echo 'Suspend already running' >&2; exit 1; }
+usb=/sys/devices/platform/soc/7000000.ssusb/mode
+rtc=/sys/class/rtc/rtc0/wakealarm
+p=''
+armed=0
+changed_usb=0
+restore() {
+ rc=$?
+ trap - EXIT INT TERM
+ if [ "$armed" = 1 ]; then echo 0 >"$rtc" || true; fi
+ if [ "$changed_usb" = 1 ]; then echo "$old_usb" >"$usb" || true; fi
+ if [ -n "$p" ]; then kill -USR2 "$p" 2>/dev/null || true; fi
+ rmdir "$lock"
+ exit "$rc"
+}
+trap restore EXIT INT TERM
+[ -z "$(cat "$rtc")" ] || { echo 'RTC alarm already occupied' >&2; exit 1; }
+[ "$(cat /sys/class/rtc/rtc0/device/power/wakeup)" = enabled ]
+[ "$(cat /sys/power/mem_sleep)" = 's2idle [deep]' ]
+p=$(cat /run/r9st-keys.pid)
+[ "$(readlink /proc/$p/exe)" = /usr/local/bin/r9st-keys ]
+old_usb=$(cat "$usb")
+case "$old_usb" in peripheral|none) ;; *) echo 'Unsupported USB role' >&2; exit 1;; esac
+if [ ! -e /run/r9st-screen-off ]; then kill -USR1 "$p"; fi
+sleep 2
+[ -e /run/r9st-screen-off ]
+changed_usb=1
+echo none >"$usb"
+sleep 5
+[ "$(cat /sys/devices/platform/soc/7000000.ssusb/power/runtime_status)" = suspended ]
+echo "+$seconds" >"$rtc"
+armed=1
+cat "$rtc"
+sync
+echo "Entering deep suspend, RTC fallback in $seconds seconds"
+echo mem >/sys/power/state
+echo 'Resumed from deep suspend'
+cat /proc/sys/kernel/random/boot_id /sys/kernel/debug/suspend_stats
